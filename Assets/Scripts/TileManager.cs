@@ -1,79 +1,84 @@
-﻿    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-    public class TileManager : MonoBehaviour
+public class TileManager : MonoBehaviour
+{
+    private List<GameObject> tilesAtivos = new List<GameObject>();
+    
+    public Transform transformacaoJogador;
+    public GameObject[] prefabsTiles;
+    public GameObject[] prefabsTilesBeiraDaEstrada;
+
+    public float zSpawn = 0;
+    public float comprimentoTile = 30;
+    
+    public int numeroDeTiles;
+    public int numeroDeTilesBeiraDaEstrada;
+    int tilesBeiraDaEstradaCriados = 0;
+    void Start()
     {
-        private List<GameObject> activeTiles = new List<GameObject>();
+        IniciarTiles();
+    }
+    void Update()
+    {
+        VerificarSpawnTiles();
+    }
+
+    public void SpawnTile(int indiceTile)
+    {
+        GameObject objetoTile = Instantiate(prefabsTiles[indiceTile], transform.forward * zSpawn, transform.rotation);
+        tilesAtivos.Add(objetoTile);
+        zSpawn += comprimentoTile;
+    }
+
+    public void SpawnTilesBeiraDaEstrada(int indiceTileEsquerdo, int indiceTileDireito)
+    {
+        GameObject esquerdo = Instantiate(prefabsTilesBeiraDaEstrada[indiceTileEsquerdo], new Vector3(0.5F + (comprimentoTile / 4), 0, comprimentoTile * tilesBeiraDaEstradaCriados), transform.rotation);
+        GameObject direito = Instantiate(prefabsTilesBeiraDaEstrada[indiceTileDireito], new Vector3(-(0.5F + (comprimentoTile / 4)), 0, comprimentoTile * tilesBeiraDaEstradaCriados), transform.rotation);
         
-        public Transform playerTransform;
-        public GameObject[] tilePrefabs;
-        public GameObject[] roadsideTilePrefabs;
+        tilesAtivos.Add(esquerdo);
+        tilesAtivos.Add(direito);
 
-        public float zSpawn = 0;
-        public float tileLength = 30;
-        
-        public int numberOfTiles;
-        public int numberOfRoadsideTiles;
-        int roadsideTilesCreated = 0;
+        tilesBeiraDaEstradaCriados++;
+    }
 
-        // Start is called before the first frame update
-        void Start()
+    private void ExcluirTiles()
+    {
+        for (int i = 0; i < 2; i++)
         {
-            for(int i = 0; i < numberOfTiles; i++)
+            Destroy(tilesAtivos[i]);
+            tilesAtivos.RemoveAt(i);
+        }
+    }
+
+    private void IniciarTiles()
+    {
+        for(int i = 0; i < numeroDeTiles; i++)
+        {
+            if (i == 0)
             {
-                if (i == 0)
-                {
-                    SpawnTile(0);
-                    SpawnRoadsideTiles(1, 1);
-                }
-                else
-                {
-                    SpawnTile(UnityEngine.Random.Range(0, tilePrefabs.Length));
-                    SpawnRoadsideTiles(UnityEngine.Random.Range(0, roadsideTilePrefabs.Length),
-                        UnityEngine.Random.Range(0, roadsideTilePrefabs.Length));
-                }
+                SpawnTile(0);
+                SpawnTilesBeiraDaEstrada(1, 1);
             }
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            if (playerTransform.position.z - 35 > zSpawn - (numberOfTiles * tileLength))
+            else
             {
-                SpawnTile(UnityEngine.Random.Range(0, tilePrefabs.Length));
-                SpawnRoadsideTiles(UnityEngine.Random.Range(0, roadsideTilePrefabs.Length),
-                    UnityEngine.Random.Range(0, roadsideTilePrefabs.Length));
-                DeleteTiles();
-            }
-        }
-
-        public void SpawnTile(int tileIndex)
-        {
-            GameObject go = Instantiate(tilePrefabs[tileIndex], transform.forward * zSpawn, transform.rotation);
-            activeTiles.Add(go);
-            zSpawn += tileLength;
-        }
-
-        public void SpawnRoadsideTiles(int leftTileIndex, int rightTileIndex)
-        {
-            GameObject left = Instantiate(roadsideTilePrefabs[leftTileIndex], new Vector3(0.5F + (tileLength / 4), 0, tileLength * roadsideTilesCreated), transform.rotation);
-            GameObject right = Instantiate(roadsideTilePrefabs[rightTileIndex], new Vector3(-(0.5F + (tileLength / 4)), 0, tileLength * roadsideTilesCreated), transform.rotation);
-            
-            activeTiles.Add(left);
-            activeTiles.Add(right);
-
-            roadsideTilesCreated++;
-        }
-
-        //removing three tiles at once (main and two from roadsides)
-        private void DeleteTiles()
-        {
-            for (int i = 0; i < 2; i++)
-            {
-                Destroy(activeTiles[i]);
-                activeTiles.RemoveAt(i);
+                SpawnTile(UnityEngine.Random.Range(0, prefabsTiles.Length));
+                SpawnTilesBeiraDaEstrada(UnityEngine.Random.Range(0, prefabsTilesBeiraDaEstrada.Length),
+                    UnityEngine.Random.Range(0, prefabsTilesBeiraDaEstrada.Length));
             }
         }
     }
+
+    private void VerificarSpawnTiles()
+    {
+        if (transformacaoJogador.position.z - 35 > zSpawn - (numeroDeTiles * comprimentoTile))
+        {
+            SpawnTile(UnityEngine.Random.Range(0, prefabsTiles.Length));
+            SpawnTilesBeiraDaEstrada(UnityEngine.Random.Range(0, prefabsTilesBeiraDaEstrada.Length),
+                UnityEngine.Random.Range(0, prefabsTilesBeiraDaEstrada.Length));
+            ExcluirTiles();
+        }
+    }
+}

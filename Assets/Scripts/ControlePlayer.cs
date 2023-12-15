@@ -12,11 +12,8 @@ public class ControlePlayer : MonoBehaviour
     public const float ModificadorVelocidade = 0.2f;
     public float velocidadeExibida = 0; 
 
-    //0 - esquerda
-    //1 - meio
-    //2 - direita
     private int faixaDesejada = 1;
-    public float distanciaEntreFaixas = 4; //distância entre duas faixas
+    public float distanciaEntreFaixas = 4;
 
     public float forcaPulo;
     public float gravidade;
@@ -35,14 +32,11 @@ public class ControlePlayer : MonoBehaviour
 
         direcao.z = velocidadeFrente;
         
-        ExecutarPulo();
         ExecutarVirada();
 
-        // Calcular onde deveríamos estar em seguida
         Vector3 posicaoAlvo = transform.position.z * transform.forward
                                + transform.position.y * transform.up;
 
-        // Mover o jogador corretamente
         if (faixaDesejada == 0)
             posicaoAlvo += Vector3.left * distanciaEntreFaixas;
         else if (faixaDesejada == 2)
@@ -92,24 +86,6 @@ public class ControlePlayer : MonoBehaviour
             if (faixaDesejada == 3)
                 faixaDesejada = 2;
         }
-    }
-
-    private void ExecutarPulo()
-    {
-        if (controlador.isGrounded)
-        {
-            if (Input.GetKeyDown(KeyCode.UpArrow) || Movement.deslizeCima)
-                Pular();
-        }
-        else
-        {
-            direcao.y += gravidade * Time.deltaTime;
-        }
-    }
-
-    private void Pular()
-    {
-        direcao.y = forcaPulo;
     }
 
     private void AumentarVelocidade()
